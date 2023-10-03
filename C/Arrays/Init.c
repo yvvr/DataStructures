@@ -14,6 +14,11 @@ int sumOfArray(int arr[])
     return sum;
 }
 
+int lengthOfArray(int *arr)
+{
+    return *(&arr + 1) - arr;
+}
+
 float getAverage(int *arr)
 {
     int sum = 0;
@@ -62,6 +67,9 @@ int main()
     {
         arr[i] += 1;
     }
+
+    int size = sizeof(arr) / sizeof(arr[0]);
+    printf("Length of Array: %d\n", size);
 
     for (int i = 0; i < ARRAY_LENGTH; i++)
     {
