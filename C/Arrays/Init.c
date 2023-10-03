@@ -14,11 +14,6 @@ int sumOfArray(int arr[])
     return sum;
 }
 
-int lengthOfArray(int *arr)
-{
-    return *(&arr + 1) - arr;
-}
-
 float getAverage(int *arr)
 {
     int sum = 0;
