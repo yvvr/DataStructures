@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <limits.h>
 
 #define ARRAY_LENGTH 5
 
@@ -13,7 +14,30 @@ int sumOfArray(int arr[])
     return sum;
 }
 
-int* getArray()
+float getAverage(int *arr)
+{
+    int sum = 0;
+    for (int i = 0; i < ARRAY_LENGTH; i++)
+    {
+        sum += *(arr + i);
+    }
+    return (float)sum / ARRAY_LENGTH;
+}
+
+int getLargest(int *arr)
+{
+    int max = INT_MIN;
+    for (int i = 0; i < ARRAY_LENGTH; i++)
+    {
+        if (max < *(arr + i))
+        {
+            max = arr[i];
+        }
+    }
+    return max;
+}
+
+int *getArray()
 {
     static int arr[ARRAY_LENGTH] = {15, 25, 35, 45, 55};
     return arr;
@@ -25,13 +49,18 @@ int main()
 
     int arr[5];
 
+    for (int i = 0; i < ARRAY_LENGTH; i++)
+    {
+        scanf("%d", &arr[i]);
+    }
+
     int ptrArr[5] = {10, 20, 30, 40, 50};
 
     int *ptrToArr = &ptrArr[0];
 
     for (int i = 0; i < ARRAY_LENGTH; i++)
     {
-        arr[i] = i + 1;
+        arr[i] += 1;
     }
 
     for (int i = 0; i < ARRAY_LENGTH; i++)
@@ -61,6 +90,12 @@ int main()
     {
         printf("Array[%d] Address: %d, value: %d\n", i, ptrToArr, *ptrToArr++);
     }
+
+    printf("\n");
+    printf("Average value of Array: %f\n", getAverage(arr));
+
+    printf("\n");
+    printf("Max value of Array: %d\n", getLargest(arr));
 
     return 0;
 }
