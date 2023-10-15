@@ -39,4 +39,4 @@ def binarySearchFloor(arr, num):
 
 if __name__ == "__main__":
     arr = [-3, 2, 4, 5, 6, 8, 9, 10]
-    print("Floor Value is:", binarySearchFloor(arr, -5))
+    print("Floor Value is:", binarySearchFloor(arr, 7))

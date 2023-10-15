@@ -59,6 +59,6 @@ int binarySearchFloor(std::vector<int> arr, int i, int j, int num)
 int main()
 {
     std::vector<int> arr = {-2, 2, 3, 5, 6, 8, 9, 12};
-    std::cout << "Floor Value is: " << binarySearchFloor(arr, 0, arr.size() - 1, -3) << std::endl;
+    std::cout << "Floor Value is: " << binarySearchFloor(arr, 0, arr.size() - 1, 7) << std::endl;
     return 0;
 }
