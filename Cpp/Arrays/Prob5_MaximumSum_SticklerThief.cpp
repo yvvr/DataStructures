@@ -23,7 +23,6 @@
 
 #include <iostream>
 #include <vector>
-#include <climits>
 #include <algorithm>
 
 // Approch 1: Using Simple Recursion.
@@ -50,7 +49,7 @@ int findMaxSum(int arr[], int n)
 {
     if (n == 1)
     {
-        arr[0];
+        return arr[0];
     }
     int sum2 = 0, sum1 = arr[0];
     for (int i = 1; i < n; i++)
