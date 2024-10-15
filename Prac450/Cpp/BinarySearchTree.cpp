@@ -174,6 +174,19 @@ public:
         return std::make_pair(isCurrBst && leftPair.first && rightPair.first, 1 + leftPair.second + rightPair.second);
     }
 
+    /**
+     * Given the root of a binary tree. Check whether it is a BST or not.
+     * Note: We are considering that BSTs can not contain duplicate Nodes.
+     * https://www.geeksforgeeks.org/problems/check-for-bst/1
+     */
+    bool isBST(Node *root)
+    {
+        if (root == nullptr)
+        {
+            return true;
+        }
+        return isBSTUtil(root, INT_MIN, INT_MAX);
+    }
     // Largest BST in a Binary Tree
     // Time Complexity : O(n^2)
     // Space Complexity : O(1)
@@ -238,7 +251,6 @@ public:
      *
      * hhttps://www.geeksforgeeks.org/problems/flatten-bst-to-sorted-list--111950/1
      */
-
     Node *flattenBST(Node *root)
     {
         if (root == nullptr)
@@ -475,6 +487,106 @@ public:
         return index;
     }
 
+    /**
+     * Given a Binary Search Tree and a node value X, find if the node with value X is present in the BST or not.
+     * https://www.geeksforgeeks.org/binary-search-tree-set-1-search-and-insertion/
+     */
+    bool search(Node *root, int x)
+    {
+        if (root == nullptr)
+        {
+            return false;
+        }
+        if (root->data > x)
+        {
+            return search(root->left, x);
+        }
+        else if (root->data < x)
+        {
+            return search(root->right, x);
+        }
+        else
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Given a root node reference of a BST and a key, delete the node with the given key in the BST.
+     * Return the root node reference (possibly updated) of the BST.
+     * https://leetcode.com/problems/delete-node-in-a-bst/description/
+     */
+    Node *deleteNode(Node *root, int key)
+    {
+        if (root == nullptr)
+        {
+            return root;
+        }
+
+        if (root->data > key)
+        {
+            root->left = deleteNode(root->left, key);
+        }
+        else if (root->data < key)
+        {
+            root->right = deleteNode(root->right, key);
+        }
+        else
+        {
+            if (root->left == nullptr)
+            {
+                Node *temp = root->right;
+                delete root;
+                return temp;
+            }
+
+            if (root->right == nullptr)
+            {
+                Node *temp = root->left;
+                delete root;
+                return temp;
+            }
+
+            Node *succ = getSucc(root);
+            root->data = succ->data;
+            root->right = deleteNode(root->right, succ->data);
+        }
+        return root;
+    }
+
+    /**
+     * Given the root of a Binary Search Tree. The task is to find the minimum valued element in this given BST.
+     * https://www.geeksforgeeks.org/problems/minimum-element-in-bst/1
+     */
+    int minValue(Node *root)
+    {
+        if (root->left == nullptr)
+        {
+            return root->data;
+        }
+        return leftMost(root)->data;
+    }
+
+    /**
+     * There is BST given with the root node with the key part as an integer only.
+     * You need to find the in-order successor and predecessor of a given key.
+     * If either predecessor or successor is not found, then set it to NULL.
+     *
+     * https://www.geeksforgeeks.org/problems/predecessor-and-successor/1
+     */
+    void findPreSuc(Node *root, Node *&pre, Node *&suc, int key)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        suc = getSuccInBst(root, key);
+        pre = getPredInBst(root, key);
+        return;
+    }
+
 private:
     std::pair<Node *, Node *> flatternBSTUtil(Node *root)
     {
@@ -676,12 +788,73 @@ private:
         return succ;
     }
 
+    Node *getPredInBst(Node *root, int target)
+    {
+        if (root == nullptr)
+        {
+            return nullptr;
+        }
+
+        if (root->data == target && root->left != nullptr)
+        {
+            return rightMost(root->left);
+        }
+
+        Node *pred = nullptr;
+        Node *curr = root;
+
+        while (curr != nullptr)
+        {
+            if (target <= curr->data)
+            {
+                curr = curr->left;
+            }
+            else if (target > curr->data)
+            {
+                pred = curr;
+                curr = curr->right;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return pred;
+    }
+
     Node *leftMost(Node *node)
     {
         Node *curr = node;
         while (curr->left != nullptr)
             curr = curr->left;
         return curr;
+    }
+
+    Node *rightMost(Node *node)
+    {
+        Node *curr = node;
+        while (curr->right != nullptr)
+            curr = curr->right;
+        return curr;
+    }
+
+    Node *getSucc(Node *curr)
+    {
+        curr = curr->right;
+        while (curr != nullptr && curr->left != nullptr)
+        {
+            curr = curr->left;
+        }
+        return curr;
+    }
+
+    bool isBSTUtil(Node *root, int min, int max)
+    {
+        if (root == nullptr)
+        {
+            return true;
+        }
+        return (root->data > min && root->data < max) && isBSTUtil(root->left, min, root->data) && isBSTUtil(root->right, root->data, max);
     }
 };
 

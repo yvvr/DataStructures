@@ -26,8 +26,8 @@ public:
     // Function to find the next greater element for each element of the array.
     std::vector<long long> nextLargerElement(std::vector<long long> arr, int n)
     {
-        std::stack<std::pair<int, int>> stack;
-        
+        std::stack<std::pair<long long, int>> stack;
+
         for (int i = 0; i < arr.size(); i++)
         {
             while (!stack.empty() && stack.top().first < arr[i])
