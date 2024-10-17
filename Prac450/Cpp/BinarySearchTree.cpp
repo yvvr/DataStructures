@@ -7,7 +7,7 @@
  *
  * @copyright Copyright (c) 2024
  *
- * Sorting algorithms
+ * Binary Search Tree algorithms
  *
  * You are given a pointer to the root of a binary search tree and values to be inserted into the tree.
  * Insert the values into their appropriate position in the binary search tree and return the root of the updated binary tree.
@@ -300,6 +300,11 @@ public:
         return root;
     }
 
+    /**
+     * Given a Binary Search Tree (with all values unique) and two node values n1 and n2 (n1!=n2).
+     * Find the Lowest Common Ancestors of the two nodes in the BST.
+     * https://www.geeksforgeeks.org/problems/lowest-common-ancestor-in-a-bst/1
+     */
     Node *lca(Node *root, int v1, int v2)
     {
         if ((v1 <= root->data && v2 >= root->data) || (v2 <= root->data && v1 >= root->data))
@@ -587,6 +592,36 @@ public:
         return;
     }
 
+    int kthLargest(Node *root, int K)
+    {
+        int count = 0;
+        Node *kthLargestNode = kthLargestUtil(root, K, count);
+
+        return kthLargestNode == nullptr ? -1 : kthLargestNode->data;
+    }
+
+    int kthSmallest(Node *root, int K)
+    {
+        int count = 0;
+        Node *kthSmallestNode = kthSmallestUtil(root, K, count);
+
+        return kthSmallestNode == nullptr ? -1 : kthSmallestNode->data;
+    }
+
+    /**
+     * Normal BST to Balanced BST
+     *
+     * Given a Binary Search Tree, modify the given BST such that it is balanced and has minimum possible height. Return the balanced BST.
+     * https://www.geeksforgeeks.org/problems/normal-bst-to-balanced-bst/1
+     */
+    Node *buildBalancedTree(Node *root)
+    {
+        std::vector<int> vec;
+        storeInorderOfBst(root, vec);
+
+        return buildABalancedBst(vec, 0, vec.size() - 1);
+    }
+
 private:
     std::pair<Node *, Node *> flatternBSTUtil(Node *root)
     {
@@ -855,6 +890,80 @@ private:
             return true;
         }
         return (root->data > min && root->data < max) && isBSTUtil(root->left, min, root->data) && isBSTUtil(root->right, root->data, max);
+    }
+
+    Node *kthLargestUtil(Node *root, int k, int &count)
+    {
+        if (root == nullptr)
+        {
+            return nullptr;
+        }
+
+        Node *nodeFromRightTree = kthLargestUtil(root->right, k, count);
+
+        if (nodeFromRightTree != nullptr)
+        {
+            return nodeFromRightTree;
+        }
+
+        count++;
+        if (count == k)
+        {
+            return root;
+        }
+
+        return kthLargestUtil(root->left, k, count);
+    }
+
+    Node *kthSmallestUtil(Node *root, int k, int &count)
+    {
+        if (root == nullptr)
+        {
+            return nullptr;
+        }
+
+        Node *nodeFromLeftTree = kthSmallestUtil(root->left, k, count);
+
+        if (nodeFromLeftTree != nullptr)
+        {
+            return nodeFromLeftTree;
+        }
+
+        count++;
+        if (count == k)
+        {
+            return root;
+        }
+
+        return kthSmallestUtil(root->right, k, count);
+    }
+
+    void storeInorderOfBst(Node *root, std::vector<int> &vec)
+    {
+
+        if (root == nullptr)
+        {
+            return;
+        }
+
+        storeInorderOfBst(root->left, vec);
+        vec.push_back(root->data);
+        storeInorderOfBst(root->right, vec);
+    }
+
+    Node *buildABalancedBst(std::vector<int> &vec, int l, int r)
+    {
+        if (l > r)
+        {
+            return nullptr;
+        }
+
+        int mid = (l + r) / 2;
+        Node *root = new Node(vec[mid]);
+        root->left = buildABalancedBst(vec, l, mid - 1);
+        root->right = buildABalancedBst(vec, mid + 1, r);
+
+        return root;
     }
 };
 
