@@ -109,8 +109,8 @@ public:
     // Return the root of the generated BST
     Node *binaryTreeToBST(Node *root)
     {
-        Node* bstRoot = nullptr;
-        binaryTreeToBstUtil(root, bstRoot);
+        Node *bstRoot = nullptr;
+        binaryTreeToBstUtil(root, &bstRoot);
         return bstRoot;
     }
 
@@ -145,14 +145,14 @@ private:
         return root;
     }
 
-    void binaryTreeToBstUtil(Node *root, Node *bstRoot)
+    void binaryTreeToBstUtil(Node *root, Node **bstRoot)
     {
         if (root == nullptr)
         {
             return;
         }
         binaryTreeToBstUtil(root->left, bstRoot);
-        bstRoot = insertBst(bstRoot, root->data);
+        *bstRoot = insertBst(*bstRoot, root->data);
         binaryTreeToBstUtil(root->right, bstRoot);
     };
 
