@@ -23,6 +23,7 @@
 #include <vector>
 #include <sstream>
 #include <queue>
+#include <stack>
 
 struct Node
 {
@@ -33,7 +34,7 @@ struct Node
     Node(int val)
     {
         data = val;
-        left = right = NULL;
+        left = right = nullptr;
     }
 };
 
@@ -44,7 +45,7 @@ public:
     {
         // Corner Case
         if (str.length() == 0 || str[0] == 'N')
-            return NULL;
+            return nullptr;
 
         // Creating vector of strings from input
         // string after spliting by space
@@ -105,6 +106,17 @@ public:
         return root;
     }
 
+    /**
+     * Diameter of a Binary Tree
+     *
+     * The diameter of a tree (sometimes called the width) is the number of nodes on the longest path between two end nodes.
+     * https://www.geeksforgeeks.org/problems/diameter-of-binary-tree/1
+     */
+    int diameter(Node *root)
+    {
+        return diameterUtil(root).second;
+    }
+
     // The given root is the root of the Binary Tree
     // Return the root of the generated BST
     Node *binaryTreeToBST(Node *root)
@@ -112,6 +124,67 @@ public:
         Node *bstRoot = nullptr;
         binaryTreeToBstUtil(root, &bstRoot);
         return bstRoot;
+    }
+
+    /**
+     * Construct BST from given preorder traversal using Stack
+     *
+     * Given preorder traversal of a binary search tree, construct the BST.
+     * https://www.geeksforgeeks.org/construct-bst-from-given-preorder-traversal-using-stack/
+     */
+    Node *constructTree(int pre[], int size)
+    {
+        if (size == 0)
+        {
+            return nullptr;
+        }
+
+        std::stack<Node *> stack;
+        Node *root = new Node(pre[0]);
+        stack.push(root);
+
+        for (int i = 1; i < size; i++)
+        {
+            Node *temp = nullptr;
+            while (!stack.empty() && stack.top()->data < pre[i])
+            {
+                temp = stack.top();
+                stack.pop();
+            }
+
+            if (temp == nullptr)
+            {
+                stack.top()->left = new Node(pre[i]);
+                stack.push(stack.top()->left);
+            }
+            else
+            {
+                temp->right = new Node(pre[i]);
+                stack.push(temp->right);
+            }
+        }
+
+        return root;
+    }
+
+    /**
+     * Check if Tree is Isomorphic.
+     * Given two Binary Trees. Check whether they are Isomorphic or not.
+     * https://www.geeksforgeeks.org/problems/check-if-tree-is-isomorphic/1
+     */
+    bool isIsomorphic(Node *root1, Node *root2)
+    {
+        if (root1 == nullptr && root2 == nullptr)
+        {
+            return true;
+        }
+
+        if (root1 == nullptr || root2 == nullptr)
+        {
+            return false;
+        }
+
+        return root1->data == root2->data && isIsomorphic(root1->left, root2->left) && isIsomorphic(root1->right, root2->right) || isIsomorphic(root1->right, root2->left) && isIsomorphic(root1->left, root2->right);
     }
 
     void printInorder(struct Node *node)
@@ -154,17 +227,54 @@ private:
         binaryTreeToBstUtil(root->left, bstRoot);
         *bstRoot = insertBst(*bstRoot, root->data);
         binaryTreeToBstUtil(root->right, bstRoot);
-    };
-
-    int main()
-    {
-        Solution obj;
-        std::string s;
-        std::getline(std::cin, s);
-        Node *root = obj.buildTree(s);
-
-        Node *res = obj.binaryTreeToBST(root);
-        obj.printInorder(res);
-        std::cout << std::endl;
-        return 0;
     }
+
+    std::pair<int, int> diameterUtil(Node *root)
+    {
+        if (root == nullptr)
+        {
+            return {0, 0};
+        }
+
+        auto leftDiameter = diameterUtil(root->left);
+        auto rightDiameter = diameterUtil(root->right);
+        auto maxDiamterFromSubTrees = std::max(leftDiameter.second, rightDiameter.second);
+
+        return {1 + std::max(leftDiameter.first, rightDiameter.first), std::max(maxDiamterFromSubTrees, 1 + leftDiameter.first + rightDiameter.first)};
+    }
+};
+
+int main()
+{
+    Solution obj;
+    // std::string s;
+    // std::getline(std::cin, s);
+    // Node *root = obj.buildTree(s);
+
+    // Node *res = obj.binaryTreeToBST(root);
+    // obj.printInorder(res);
+    // std::cout << std::endl;
+
+    // int pre[] = {10, 5, 1, 7, 40, 50};
+    // int size = sizeof(pre) / sizeof(pre[0]);
+
+    // Node *root = obj.constructTree(pre, size);
+
+    // std::cout << "Inorder traversal of the constructed tree: \n";
+    // obj.printInorder(root);
+
+    // Diameter of a Binary Tree
+    // std::cout << obj.diameter(root) << std::endl;
+
+    std::string s1, s2;
+    getline(std::cin, s1);
+    getline(std::cin, s2);
+    Node *root1 = obj.buildTree(s1);
+    Node *root2 = obj.buildTree(s2);
+    if (obj.isIsomorphic(root1, root2))
+        std::cout << "Yes" << std::endl;
+    else
+        std::cout << "No" << std::endl;
+
+    return 0;
+}
