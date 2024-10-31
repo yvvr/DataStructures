@@ -197,6 +197,28 @@ public:
         printInorder(node->right);
     }
 
+    /**
+     * Function to check whether a binary tree is foldable or not.
+     * Given a binary tree, check if the tree can be folded or not.
+     * A tree can be folded if left and right subtrees of the tree are structure wise mirror image of each other.
+     * An empty tree is considered as foldable.
+     * https://www.geeksforgeeks.org/problems/foldable-binary-tree/1
+     */
+    bool IsFoldable(Node *root)
+    {
+        return IsFoldableUtil(root, root);
+    }
+
+    /**
+     * Symmetric Tree.
+     * Given a Binary Tree. Check whether it is Symmetric or not, i.e. whether the binary tree is a Mirror image of itself or not.
+     * https://www.geeksforgeeks.org/problems/symmetric-tree/1
+     */
+    bool isSymmetric(struct Node *root)
+    {
+        return isSymmetricutil(root, root);
+    }
+
 private:
     Node *insertBst(Node *root, int data)
     {
@@ -242,14 +264,44 @@ private:
 
         return {1 + std::max(leftDiameter.first, rightDiameter.first), std::max(maxDiamterFromSubTrees, 1 + leftDiameter.first + rightDiameter.first)};
     }
+
+    bool IsFoldableUtil(Node *root1, Node *root2)
+    {
+        if (root1 == nullptr && root2 == nullptr)
+        {
+            return true;
+        }
+
+        if (root1 == nullptr || root2 == nullptr)
+        {
+            return false;
+        }
+
+        return IsFoldableUtil(root1->left, root2->right) && IsFoldableUtil(root1->right, root2->left);
+    }
+
+    bool isSymmetricutil(struct Node *root1, struct Node *root2)
+    {
+        if (root1 == nullptr && root2 == nullptr)
+        {
+            return true;
+        }
+
+        if (root1 == nullptr || root2 == nullptr)
+        {
+            return false;
+        }
+
+        return root1->data == root2->data && isSymmetricutil(root1->left, root2->right) && isSymmetricutil(root1->right, root2->left);
+    }
 };
 
 int main()
 {
     Solution obj;
-    // std::string s;
-    // std::getline(std::cin, s);
-    // Node *root = obj.buildTree(s);
+    std::string s;
+    std::getline(std::cin, s);
+    Node *root = obj.buildTree(s);
 
     // Node *res = obj.binaryTreeToBST(root);
     // obj.printInorder(res);
@@ -266,15 +318,35 @@ int main()
     // Diameter of a Binary Tree
     // std::cout << obj.diameter(root) << std::endl;
 
-    std::string s1, s2;
-    getline(std::cin, s1);
-    getline(std::cin, s2);
-    Node *root1 = obj.buildTree(s1);
-    Node *root2 = obj.buildTree(s2);
-    if (obj.isIsomorphic(root1, root2))
-        std::cout << "Yes" << std::endl;
+    // std::string s1, s2;
+    // getline(std::cin, s1);
+    // getline(std::cin, s2);
+    // Node *root1 = obj.buildTree(s1);
+    // Node *root2 = obj.buildTree(s2);
+    // if (obj.isIsomorphic(root1, root2))
+    //     std::cout << "Yes" << std::endl;
+    // else
+    //     std::cout << "No" << std::endl;
+
+    // Foldable Binary Tree
+    // if (obj.IsFoldable(root))
+    // {
+    //     std::cout << "Yes\n";
+    // }
+    // else
+    // {
+    //     std::cout << "No\n";
+    // }
+
+    // Symmetric Tree
+    if (obj.isSymmetric(root))
+    {
+        std::cout << "Yes\n";
+    }
     else
-        std::cout << "No" << std::endl;
+    {
+        std::cout << "No\n";
+    }
 
     return 0;
 }

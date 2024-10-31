@@ -21,6 +21,9 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <unordered_map>
+#include <algorithm>
+#include <string>
 
 struct Node
 {
@@ -46,6 +49,8 @@ struct CNode
 
 class Solution
 {
+    int mod = 1e9 + 7;
+
 public:
     void preorder(CNode *root)
     {
@@ -208,6 +213,73 @@ public:
         printGraphicallyNTreeUtil(root, flags, 0, true);
     }
 
+    std::string ConvertCanonical(std::unordered_map<int, std::vector<int>> &tree, int vertex, int parent)
+    {
+        std::vector<std::string> childForms;
+        std::string canonical = "(";
+
+        for (auto neighbour : tree[vertex])
+        {
+            if (neighbour == parent)
+            {
+                continue;
+            }
+
+            childForms.push_back(ConvertCanonical(tree, neighbour, vertex));
+        }
+
+        std::sort(childForms.begin(), childForms.end());
+
+        for (auto child : childForms)
+        {
+            canonical += child;
+        }
+        canonical += ")";
+
+        return canonical;
+    }
+
+    int countSubtreesUtil(int cur, int par, std::vector<std::vector<int>> graph, int &ans)
+    {
+        int res = 1;
+
+        for (int i = 0; i < graph[cur].size(); i++)
+        {
+
+            int v = graph[cur][i];
+
+            if (v == par)
+                continue;
+            res = (res * (countSubtreesUtil(v, cur, graph, ans) + 1)) % mod;
+        }
+
+        ans = (ans + res) % mod;
+
+        return res;
+    }
+
+    /**
+     * Function to count the number of subtrees in the given tree.
+     */
+    void countSubtrees(int N, std::vector<std::pair<int, int>> &adj)
+    {
+        std::vector<std::vector<int>> graph;
+        int ans = 0;
+
+        for (int i = 0; i < N - 1; i++)
+        {
+            int a = adj[i].first;
+            int b = adj[i].second;
+
+            graph[a].push_back(b);
+            graph[b].push_back(a);
+        }
+        countSubtreesUtil(0, -1, graph, ans);
+
+        // Print count of subtrees
+        std::cout << ans + 1;
+    }
+
     CNode *createDummyCTree()
     {
         CNode *root = new CNode('A');
@@ -222,6 +294,12 @@ public:
         root->children[2]->children.push_back(new CNode('J'));
         root->children[0]->children[1]->children.push_back(new CNode('K'));
         return root;
+    }
+
+    void addedge(std::unordered_map<int, std::vector<int>> &tree, int a, int b)
+    {
+        tree[a].push_back(b);
+        tree[b].push_back(a);
     }
 
 private:
@@ -272,21 +350,21 @@ int main()
     Solution obj;
 
     // Creating a generic tree
-    Node *root = new Node(20);
-    (root->children).push_back(new Node(2));
-    (root->children).push_back(new Node(34));
-    (root->children).push_back(new Node(50));
-    (root->children).push_back(new Node(60));
-    (root->children).push_back(new Node(70));
-    (root->children[0]->children).push_back(new Node(15));
-    (root->children[0]->children).push_back(new Node(20));
-    (root->children[0]->children).push_back(new Node(90));
-    (root->children[1]->children).push_back(new Node(30));
-    (root->children[2]->children).push_back(new Node(40));
-    (root->children[2]->children).push_back(new Node(100));
-    (root->children[2]->children).push_back(new Node(20));
-    (root->children[0]->children[1]->children).push_back(new Node(25));
-    (root->children[0]->children[1]->children).push_back(new Node(50));
+    // Node *root = new Node(20);
+    // (root->children).push_back(new Node(2));
+    // (root->children).push_back(new Node(34));
+    // (root->children).push_back(new Node(50));
+    // (root->children).push_back(new Node(60));
+    // (root->children).push_back(new Node(70));
+    // (root->children[0]->children).push_back(new Node(15));
+    // (root->children[0]->children).push_back(new Node(20));
+    // (root->children[0]->children).push_back(new Node(90));
+    // (root->children[1]->children).push_back(new Node(30));
+    // (root->children[2]->children).push_back(new Node(40));
+    // (root->children[2]->children).push_back(new Node(100));
+    // (root->children[2]->children).push_back(new Node(20));
+    // (root->children[0]->children[1]->children).push_back(new Node(25));
+    // (root->children[0]->children[1]->children).push_back(new Node(50));
 
     // std::cout << obj.sumNodes(root) << std::endl;
     // std::cout << obj.sumNodesWithLevelOrder(root) << std::endl;
@@ -319,7 +397,37 @@ int main()
     // std::cout << (obj.isBinaryTree(root) ? "Yes" : "No");
 
     // Print N-ary tree graphically
-    obj.printGraphicallyNTree(root);
+    // obj.printGraphicallyNTree(root);
+
+    // Given N-ary Tree 1
+    std::unordered_map<int, std::vector<int>> tree;
+    obj.addedge(tree, 1, 3);
+    obj.addedge(tree, 1, 2);
+    obj.addedge(tree, 1, 5);
+    obj.addedge(tree, 3, 4);
+    obj.addedge(tree, 4, 8);
+    obj.addedge(tree, 4, 9);
+    obj.addedge(tree, 3, 6);
+    obj.addedge(tree, 6, 7);
+
+    // Given N-ary Tree 2
+    std::unordered_map<int, std::vector<int>> tree2;
+    obj.addedge(tree2, 1, 3);
+    obj.addedge(tree2, 3, 4);
+    obj.addedge(tree2, 3, 5);
+    obj.addedge(tree2, 1, 8);
+    obj.addedge(tree2, 8, 9);
+    obj.addedge(tree2, 1, 2);
+    obj.addedge(tree2, 2, 6);
+    obj.addedge(tree2, 2, 7);
+
+    std::string cononicalTree = obj.ConvertCanonical(tree, 1, -1);
+    std::string cononicalTree2 = obj.ConvertCanonical(tree2, 3, -1);
+
+    if (cononicalTree == cononicalTree2)
+        std::cout << "YES" << std::endl;
+    else
+        std::cout << "NO" << std::endl;
 
     return 0;
 }

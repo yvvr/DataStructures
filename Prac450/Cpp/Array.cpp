@@ -20,6 +20,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
+#include <algorithm>
 
 class Solution
 {
@@ -76,6 +77,72 @@ public:
         }
         return 1;
     }
+
+    /**
+     * Minimum Swaps to Sort.
+     * Given an array of n distinct elements.
+     * Find the minimum number of swaps required to sort the array in strictly increasing order.
+     * https://www.geeksforgeeks.org/problems/minimum-swaps/1
+     * Time complexity : O(nlogn), Space complexity: O(n)
+     */
+    int minSwaps(std::vector<int> &nums)
+    {
+        std::unordered_map<int, int> map;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            map[nums[i]] = i;
+        }
+        std::sort(nums.begin(), nums.end());
+
+        std::unordered_map<int, bool> visible;
+        int ans = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (map[nums[i]] == i || visible[nums[i]])
+            {
+                continue;
+            }
+            int count = 0;
+            int j = i;
+            while (!visible[nums[j]])
+            {
+                visible[nums[j]] = true;
+                j = map[nums[j]];
+                count++;
+            }
+            ans += (count - 1);
+        }
+        return ans;
+    }
+
+    /**
+     * Minimum Swaps to Sort optmized greedy algorithm.
+     * Given an array of n distinct elements.
+     * Find the minimum number of swaps required to sort the array in strictly increasing order.
+     * https://www.geeksforgeeks.org/problems/minimum-swaps/1
+     * Time complexity : O(n), Space complexity: O(n)
+     */
+    int minSwapsOpt(std::vector<int> &nums)
+    {
+        std::unordered_map<int, int> map;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            map[nums[i]] = i;
+        }
+        std::sort(nums.begin(), nums.end());
+
+        int ans = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (map[nums[i]] != i)
+            {
+                int j = map[nums[i]];
+                std::swap(nums[i], nums[j]);
+                ans++;
+            }
+        }
+        return ans;
+    }
 };
 
 int main()
@@ -92,19 +159,29 @@ int main()
     //     std::cout << i << " ";
     // std::cout << std::endl;
 
-    int n, e;
+    // int n, e;
 
-    std::cin >> n >> e;
-    int A[2 * e], B[2 * e];
+    // std::cin >> n >> e;
+    // int A[2 * e], B[2 * e];
 
-    for (int i = 0; i < 2 * e; i++)
-        std::cin >> A[i];
+    // for (int i = 0; i < 2 * e; i++)
+    //     std::cin >> A[i];
 
-    for (int i = 0; i < 2 * e; i++)
-        std::cin >> B[i];
+    // for (int i = 0; i < 2 * e; i++)
+    //     std::cin >> B[i];
 
-    Solution ob;
-    std::cout << ob.checkMirrorTree(n, e, A, B) << std::endl;
+    // Solution ob;
+    // std::cout << ob.checkMirrorTree(n, e, A, B) << std::endl;
+
+    Solution obj;
+    int n;
+    std::cin >> n;
+    std::vector<int> nums(n);
+    for (int i = 0; i < n; i++)
+        std::cin >> nums[i];
+
+    int ans = obj.minSwapsOpt(nums);
+    std::cout << ans << "\n";
 
     return 0;
 }
