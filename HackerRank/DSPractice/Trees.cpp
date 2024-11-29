@@ -17,6 +17,7 @@
 #include <map>
 #include <vector>
 #include <queue>
+#include <stack>
 
 struct Node
 {
@@ -107,60 +108,179 @@ public:
 
     void topView(Node *root)
     {
-        if(root==nullptr){
+        if (root == nullptr)
+        {
             return;
         }
 
-        std::queue<std::pair<Node*, int>> q;
-        std::map<int, Node*> resMap;
+        std::queue<std::pair<Node *, int>> q;
+        std::map<int, Node *> resMap;
 
         q.push(std::make_pair(root, 0));
-        while(!q.empty()){
+        while (!q.empty())
+        {
             auto curr = q.front();
             q.pop();
 
-            Node* currNode = curr.first;
+            Node *currNode = curr.first;
             int currDis = curr.second;
 
-            if(currNode->left!=nullptr) {
+            if (currNode->left != nullptr)
+            {
                 q.push(std::make_pair(currNode->left, currDis - 1));
             }
-            if(currNode->right!=nullptr){
+            if (currNode->right != nullptr)
+            {
                 q.push(std::make_pair(currNode->right, currDis + 1));
             }
-            if(resMap.find(currDis) == resMap.end()){
+            if (resMap.find(currDis) == resMap.end())
+            {
                 resMap[currDis] = currNode;
             }
         }
 
-        for(auto it = resMap.begin(); it!=resMap.end(); it++){
+        for (auto it = resMap.begin(); it != resMap.end(); it++)
+        {
             std::cout << it->second->data << " ";
         }
         return;
     }
 
-    void levelOrder(Node * root) {
+    void levelOrder(Node *root)
+    {
 
-        if(root==nullptr){
+        if (root == nullptr)
+        {
             return;
         }
 
-        std::queue<Node*> q;
+        std::queue<Node *> q;
 
         q.push(root);
-        while(!q.empty()){
+        while (!q.empty())
+        {
             auto currNode = q.front();
             q.pop();
 
-            if(currNode->left!=nullptr) {
+            if (currNode->left != nullptr)
+            {
                 q.push(currNode->left);
             }
-            if(currNode->right!=nullptr){
+            if (currNode->right != nullptr)
+            {
                 q.push(currNode->right);
             }
             std::cout << currNode->data << " ";
         }
         return;
+    }
+
+    std::vector<std::vector<int>> levelOrderTrav(Node *root)
+    {
+        std::vector<std::vector<int>> result;
+        if (root == nullptr)
+        {
+            return result;
+        }
+
+        std::queue<Node *> q;
+
+        q.push(root);
+        while (!q.empty())
+        {
+            std::vector<int> level;
+            int size = q.size();
+            for (int i = 0; i < size; i++)
+            {
+                auto currNode = q.front();
+                q.pop();
+
+                if (currNode->left != nullptr)
+                {
+                    q.push(currNode->left);
+                }
+                if (currNode->right != nullptr)
+                {
+                    q.push(currNode->right);
+                }
+                level.push_back(currNode->data);
+            }
+            result.push_back(level);
+        }
+        return result;
+    }
+
+    std::vector<std::vector<int>> levelOrderTrav(Node *root)
+    {
+        std::vector<std::vector<int>> result;
+        if (root == nullptr)
+        {
+            return result;
+        }
+
+        std::stack<Node *> stack1;
+        std::stack<Node *> stack2;
+
+        stack1.push(root);
+        while (!stack1.empty() || !stack2.empty())
+        {
+            std::vector<int> level;
+            if (!stack1.empty())
+            {
+                while (!stack1.empty())
+                {
+                    Node *currNode = stack1.top();
+                    stack1.pop();
+                    if (currNode->left != nullptr)
+                    {
+                        stack2.push(currNode->left);
+                    }
+                    if (currNode->right != nullptr)
+                    {
+                        stack2.push(currNode->right);
+                    }
+                    level.push_back(currNode->data);
+                }
+            }
+            else
+            {
+                while (!stack2.empty())
+                {
+                    Node *currNode = stack2.top();
+                    stack2.pop();
+                    if (currNode->right != nullptr)
+                    {
+                        stack1.push(currNode->right);
+                    }
+                    if (currNode->left != nullptr)
+                    {
+                        stack1.push(currNode->left);
+                    }
+                    level.push_back(currNode->data);
+                }
+            }
+            result.push_back(level);
+        }
+        return result;
+    }
+
+    bool isBalanced(Node *root)
+    {
+        return isBalancedUtil(root).second;
+    }
+
+    std::pair<int, bool> isBalancedUtil(Node *root)
+    {
+        if (root == nullptr)
+        {
+            return {0, true};
+        }
+
+        auto leftPair = isBalancedUtil(root->left);
+        auto rightPair = isBalancedUtil(root->right);
+        bool isBalanced = leftPair.second && rightPair.second && std::abs(leftPair.first - rightPair.first) <= 1;
+        
+        return { 1 + std::max(leftPair.first, rightPair.first), isBalanced };
     }
 
 }; // End of Solution

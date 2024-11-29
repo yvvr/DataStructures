@@ -24,6 +24,10 @@
 #include <sstream>
 #include <queue>
 #include <stack>
+#include <unordered_map>
+#include <array>
+#include <memory>
+#include <algorithm>
 
 struct Node
 {
@@ -41,6 +45,17 @@ struct Node
 class Solution
 {
 public:
+    void inorderTrav(Node *root, std::vector<int> &arr)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        inorderTrav(root->left, arr);
+        arr.push_back(root->data);
+        inorderTrav(root->right, arr);
+    }
+
     Node *buildTree(std::string str)
     {
         // Corner Case
@@ -219,6 +234,187 @@ public:
         return isSymmetricutil(root, root);
     }
 
+    /**
+     * 95. Unique Binary Search Trees II
+     * Given an integer n, return all the structurally unique BST's (binary search trees), which has exactly n nodes of unique values from 1 to n.
+     * Return the answer in any order.
+     * https://leetcode.com/problems/unique-binary-search-trees-ii/description/
+     */
+    struct pair_hash
+    {
+        template <class T1, class T2>
+        std::size_t operator()(const std::pair<T1, T2> &pair) const
+        {
+            return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+        }
+    };
+
+    std::vector<Node *> generateTrees(int n)
+    {
+        std::unordered_map<std::pair<int, int>, std::vector<Node *>, pair_hash> map;
+        return generateTreesUtil(1, n, map);
+    }
+
+    std::vector<Node *> generateTreesUtil(int i, int j, std::unordered_map<std::pair<int, int>, std::vector<Node *>, pair_hash> &map)
+    {
+        std::vector<Node *> result;
+        if (i > j)
+        {
+            return {nullptr};
+        }
+
+        if (map.find({i, j}) != map.end())
+        {
+            return map[{i, j}];
+        }
+
+        for (int k = i; k <= j; k++)
+        {
+            std::vector<Node *> leftTrees = generateTreesUtil(i, k - 1, map);
+            std::vector<Node *> rightTrees = generateTreesUtil(k + 1, j, map);
+
+            for (auto rightTree : rightTrees)
+            {
+                for (auto leftTree : leftTrees)
+                {
+                    Node *root = new Node(k);
+                    root->right = rightTree;
+                    root->left = leftTree;
+                    result.push_back(root);
+                }
+            }
+        }
+
+        map[{i, j}] = result;
+        return result;
+    }
+
+    int numTrees(int n)
+    {
+        std::unique_ptr<int[]> dp(new int[n + 1]);
+        std::fill_n(dp.get(), n + 1, 1);
+
+        dp[0] = dp[1] = 1;
+
+        for (int i = 2; i <= n; i++)
+        {
+            int sum = 0;
+            for (int j = 1; j <= i; j++)
+            {
+                sum += dp[j - 1] * dp[i - j];
+            }
+            dp[i] = sum;
+        }
+
+        return dp[n];
+    }
+
+    /**
+     * You are given the root of a binary search tree (BST), where the values of exactly two nodes of the tree were swapped by mistake.
+     * Recover the tree without changing its structure.
+     * https://leetcode.com/problems/recover-binary-search-tree/description/
+     */
+    void recoverTree(Node *root)
+    {
+        std::vector<int> in;
+        inorderTrav(root, in);
+
+        bool isfirst = true;
+        std::pair<int, int> firstPair{-1, -1};
+        std::pair<int, int> secondPair{-1, -1};
+
+        for (int i = 1; i < in.size(); i++)
+        {
+            if (in[i] < in[i - 1])
+            {
+                if (isfirst)
+                {
+                    firstPair = {i - 1, i};
+                    isfirst = false;
+                }
+                else
+                {
+                    secondPair = {i - 1, i};
+                }
+            }
+        }
+
+        if (firstPair.first == -1 && secondPair.first == -1)
+        {
+            return;
+        }
+        else
+        {
+
+            int i = -1, j = -1;
+            int cnt = 0;
+            if (firstPair.first == -1 || secondPair.first == -1)
+            {
+                i = firstPair.first != -1 ? firstPair.first : secondPair.first;
+                j = firstPair.second != -1 ? firstPair.second : secondPair.second;
+            }
+            else
+            {
+                i = firstPair.first;
+                j = in[firstPair.second] > in[secondPair.first] ? secondPair.first : secondPair.second;
+            }
+            recoverTreeSwap(root, i, j, cnt, in);
+        }
+    }
+
+    void recoverTreeSwap(Node *root, int i, int j, int &cnt, std::vector<int> &in)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        recoverTreeSwap(root->left, i, j, cnt, in);
+        if (cnt == i)
+        {
+            root->data = in[j];
+        }
+        if (cnt == j)
+        {
+            root->data = in[i];
+        }
+        cnt++;
+        recoverTreeSwap(root->right, i, j, cnt, in);
+    }
+
+    void recoverTreeOpt(Node *root)
+    {
+        Node *prev = nullptr;
+        Node *firstNode = nullptr;
+        Node *secondNode = nullptr;
+
+        recoverInoderOpt(root, firstNode, secondNode, prev);
+        if (firstNode && secondNode)
+        {
+            int temp = firstNode->data;
+            firstNode->data = secondNode->data;
+            secondNode->data = temp;
+        }
+    }
+
+    void recoverInoderOpt(Node *root, Node *&first, Node *&second, Node *&prev)
+    {
+        if (root == nullptr)
+        {
+            return;
+        }
+        recoverInoderOpt(root->left, first, second, prev);
+        if (prev != nullptr && root->data < prev->data)
+        {
+            if (first == nullptr)
+            {
+                first = prev;
+            }
+            second = root;
+        }
+        prev = root;
+        recoverInoderOpt(root->right, first, second, prev);
+    }
+
 private:
     Node *insertBst(Node *root, int data)
     {
@@ -339,14 +535,20 @@ int main()
     // }
 
     // Symmetric Tree
-    if (obj.isSymmetric(root))
-    {
-        std::cout << "Yes\n";
-    }
-    else
-    {
-        std::cout << "No\n";
-    }
+    // if (obj.isSymmetric(root))
+    // {
+    //     std::cout << "Yes\n";
+    // }
+    // else
+    // {
+    //     std::cout << "No\n";
+    // }
+
+    // int n;
+    // std::cin >> n;
+    // // std::vector<Node *> result = obj.generateTrees(n);
+    // int result = obj.numTrees(n);
+    obj.recoverTreeOpt(root);
 
     return 0;
 }
