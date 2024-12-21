@@ -27,6 +27,7 @@
 #include <functional>
 #include <queue>
 #include <unordered_set>
+#include <set>
 
 class Solution
 {
@@ -576,10 +577,98 @@ public:
         std::vector<std::vector<int>> result;
 
         int len = 1;
-        while(len < intervals.size()) {
-
+        while (len < intervals.size())
+        {
         }
     }
+
+    /**
+     * 219. Contains Duplicate II
+     * Given an integer array nums and an integer k, return true if there are two distinct indices i and j in the array such that nums[i] == nums[j] and abs(i - j) <= k.
+     *
+     * https://leetcode.com/problems/contains-duplicate-ii/description/
+     */
+    bool containsNearbyDuplicate(std::vector<int> &nums, int k)
+    {
+        std::unordered_set<int> set;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (set.find(nums[i]) != set.end())
+            {
+                return true;
+            }
+            set.insert(nums[i]);
+            if (set.size() > k)
+            {
+                set.erase(nums[i - k]);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 220. Contains Duplicate III.
+     * You are given an integer array nums and two integers indexDiff and valueDiff.
+     *
+     * Find a pair of indices (i, j) such that:
+     *  i != j,
+     *  abs(i - j) <= indexDiff.
+     *  abs(nums[i] - nums[j]) <= valueDiff, and
+     *
+     * Return true if such pair exists or false otherwise.
+     *
+     * https://leetcode.com/problems/contains-duplicate-iii/description/
+     */
+    bool containsNearbyAlmostDuplicate(std::vector<int> &nums, int indexDiff, int valueDiff)
+    {
+        // std::set<int> set;
+        // for (int i = 0; i < nums.size(); i++)
+        // {
+        //     auto ceilIt = set.lower_bound(nums[i]);
+        //     if (ceilIt != set.end() && (*ceilIt - nums[i]) <= valueDiff)
+        //     {
+        //         return true;
+        //     }
+
+        //     auto floorIt = set.upper_bound(nums[i]);
+        //     if (floorIt != set.begin() && (nums[i] - *(--floorIt)) <= valueDiff)
+        //     {
+        //         return true;
+        //     }
+
+        //     if (i + 1 > indexDiff)
+        //     {
+        //         set.erase(nums[i - indexDiff]);
+        //     }
+        //     set.insert(nums[i]);
+        // }
+        // return false;
+
+        // Better approach O(n)
+        std::unordered_map<int, int> buckets;
+        int bucketSize = valueDiff + 1;
+
+        for (int i = 0; i < nums.size(); i++)
+        {
+            int bucketId = getBucketID(nums[i], bucketSize);
+
+            if (buckets.count(bucketId) 
+            || buckets.count(bucketId - 1) && abs(nums[i] - buckets[bucketId - 1]) < bucketSize 
+            || buckets.count(bucketId + 1) && abs(nums[i] - buckets[bucketId + 1]) < bucketSize)
+            {
+                return true;
+            }
+
+            buckets[bucketId] = nums[i];
+            if (i >= indexDiff)
+            {
+                buckets.erase(getBucketID(nums[i - indexDiff], bucketSize));
+            }
+        }
+        return false;
+    }
+
+    int getBucketID(int val, int size) { return val < 0 ? (val + 1) / size - 1 : val / size; }
 };
 
 int main()
@@ -612,10 +701,12 @@ int main()
 
     Solution obj;
     int n;
+    int indexDiff, targetDiff;
     std::cin >> n;
     std::vector<int> nums(n);
     for (int i = 0; i < n; i++)
         std::cin >> nums[i];
+    std::cin >> indexDiff >> targetDiff;
 
     // int ans = obj.minSwapsOpt(nums);
     // std::cout << ans << "\n";
@@ -627,7 +718,7 @@ int main()
     // std::cout << "------PERMUTE-------" << std::endl;
     // obj.permute(s, 0);
 
-    bool ans = obj.canPartition(nums);
+    bool ans = obj.containsNearbyAlmostDuplicate(nums, indexDiff, targetDiff);
     std::cout << ans << "\n";
 
     return 0;
