@@ -184,6 +184,65 @@ public:
     }
 };
 
+class DSUforGrid
+{
+private:
+    std::vector<int> parent;
+    std::vector<int> rank;
+    int count = 0;
+
+public:
+    DSUforGrid(std::vector<std::vector<char>> &grid)
+    {
+        int row = grid.size(), col = grid[0].size();
+        parent = std::vector<int>(row * col);
+        rank = std::vector<int>(row * col, 1);
+        std::iota(parent.begin(), parent.end(), -1);
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                parent[i * col + j] = i * col + j;
+                count++;
+            }
+        }
+    }
+
+    int find(int node)
+    {
+        int curr = node;
+        while (curr != parent[curr])
+        {
+            parent[curr] = parent[parent[curr]];
+            curr = parent[curr];
+        }
+        return curr;
+    }
+
+    bool unionOp(int u, int v)
+    {
+        int up = find(u);
+        int vp = find(v);
+        if (up == vp)
+        {
+            return false;
+        }
+        count--;
+        if (rank[vp] > rank[up])
+        {
+            std::swap(up, vp);
+        }
+        parent[vp] = up;
+        rank[up] += rank[vp];
+        return true;
+    }
+
+    int getCount()
+    {
+        return count;
+    }
+};
+
 class Solution
 {
 public:
@@ -1993,11 +2052,211 @@ public:
      * Given an m x n 2D binary grid grid which represents a map of '1's (land) and '0's (water), return the number of islands.
      * An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically.
      * You may assume all four edges of the grid are all surrounded by water.
-     * 
+     *
      * https://leetcode.com/problems/number-of-islands/description/
      */
-    int numIslands(vector<vector<char>>& grid) {
-        
+    void numIslandsDfs(int i, int j, int n, int m, std::vector<std::vector<char>> &grid, std::vector<std::vector<int>> &visited)
+    {
+        if (i < 0 || i >= n || j < 0 || j >= m || grid[i][j] == 0 || visited[i][j] == 1)
+        {
+            return;
+        }
+        visited[i][j] = 1;
+        numIslandsDfs(i + 1, j, n, m, grid, visited);
+        numIslandsDfs(i - 1, j, n, m, grid, visited);
+        numIslandsDfs(i, j + 1, n, m, grid, visited);
+        numIslandsDfs(i, j - 1, n, m, grid, visited);
+    }
+
+    void visitIslandForBfs(int i, int j, int n, int m, std::vector<std::vector<char>> &grid, std::vector<std::vector<int>> &visited, std::queue<std::pair<int, int>> &queue)
+    {
+        if (i < 0 || i >= n || j < 0 || j >= m || grid[i][j] == 0 || visited[i][j] == 1)
+        {
+            return;
+        }
+        visited[i][j] = 1;
+        queue.push({i, j});
+    }
+
+    void numIslandsBfs(int i, int j, int n, int m, std::vector<std::vector<char>> &grid, std::vector<std::vector<int>> &visited)
+    {
+        std::queue<std::pair<int, int>> queue;
+        queue.push({i, j});
+        visited[i][j] = 1;
+
+        while (!queue.empty())
+        {
+            auto [r, c] = queue.front();
+            queue.pop();
+
+            visitIslandForBfs(r + 1, c, n, m, grid, visited, queue);
+            visitIslandForBfs(r - 1, c, n, m, grid, visited, queue);
+            visitIslandForBfs(r, c - 1, n, m, grid, visited, queue);
+            visitIslandForBfs(r, c + 1, n, m, grid, visited, queue);
+        }
+    }
+
+    int numIslands(std::vector<std::vector<char>> &grid)
+    {
+        std::vector<std::vector<int>> visited(grid.size(), std::vector<int>(grid[0].size(), 0));
+        int cnt = 0, row = grid.size(), col = grid[0].size();
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                if (grid[i][j] == 1 && visited[i][j] == 0)
+                {
+                    numIslandsDfs(i, j, row, col, grid, visited);
+                    cnt++;
+                }
+            }
+        }
+        return cnt;
+    }
+
+    int numIslandsBfsOpt(std::vector<std::vector<char>> &grid)
+    {
+        int cnt = 0, row = grid.size(), col = grid[0].size();
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                if (grid[i][j] == '1')
+                {
+                    std::queue<std::pair<int, int>> queue;
+                    queue.push({i, j});
+                    grid[i][j] = '0';
+                    cnt++;
+
+                    while (!queue.empty())
+                    {
+                        auto [r, c] = queue.front();
+                        queue.pop();
+
+                        if (r + 1 < row && grid[r + 1][c] == '1')
+                        {
+                            grid[r + 1][c] = '0';
+                            queue.push({r + 1, c});
+                        }
+                        if (r - 1 >= 0 && grid[r - 1][c] == '1')
+                        {
+                            grid[r - 1][c] = '0';
+                            queue.push({r - 1, c});
+                        }
+                        if (c + 1 < col && grid[r][c + 1] == '1')
+                        {
+                            grid[r][c + 1] = '0';
+                            queue.push({r, c + 1});
+                        }
+                        if (c - 1 >= 0 && grid[r][c - 1] == '1')
+                        {
+                            grid[r][c - 1] = '0';
+                            queue.push({r, c - 1});
+                        }
+                    }
+                }
+            }
+        }
+        return cnt;
+    }
+
+    int numIslandsBfsOpt(std::vector<std::vector<char>> &grid)
+    {
+        int cnt = 0, row = grid.size(), col = grid[0].size();
+        DSUforGrid dsu(grid);
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                if (grid[i][j] == '1')
+                {
+                    grid[i][j] = '0';
+                    if (i + 1 < row && grid[i + 1][j] == '1')
+                        dsu.unionOp(i * col + j, (i + 1) * col + j);
+                    if (i - 1 >= 0 && grid[i - 1][j] == '1')
+                        dsu.unionOp(i * col + j, (i - 1) * col + j);
+                    if (j + 1 < col && grid[i][j + 1] == '1')
+                        dsu.unionOp(i * col + j, i * col + (j + 1));
+                    if (j - 1 >= 0 && grid[i][j - 1] == '1')
+                        dsu.unionOp(i * col + j, i * col + (j - 1));
+                }
+            }
+        }
+        return dsu.getCount();
+    }
+
+    /**
+     * 417. Pacific Atlantic Water Flow.
+     * There is an m x n rectangular island that borders both the Pacific Ocean and Atlantic Ocean.
+     * The Pacific Ocean touches the island's left and top edges, and the Atlantic Ocean touches the island's right and bottom edges.
+     * 
+     * The island is partitioned into a grid of square cells.
+     * You are given an m x n integer matrix heights where heights[r][c] represents the height above sea level of the cell at coordinate (r, c).
+     * The island receives a lot of rain, and the rain water can flow to neighboring cells directly north, south, east, and west if the neighboring cell's height is less than or equal to the current cell's height. 
+     * Water can flow from any cell adjacent to an ocean into the ocean.
+     * 
+     * Return a 2D list of grid coordinates result where result[i] = [ri, ci] denotes that rain water can flow from cell (ri, ci) to both the Pacific and Atlantic oceans.
+     * 
+     * https://leetcode.com/problems/pacific-atlantic-water-flow/description/
+     */
+    // Custom hash function for std::pair<int, int>
+    struct PairHash
+    {
+        template <typename T1, typename T2>
+        std::size_t operator()(const std::pair<T1, T2> &pair) const
+        {
+            std::size_t h1 = std::hash<T1>{}(pair.first);
+            std::size_t h2 = std::hash<T2>{}(pair.second);
+            return h1 ^ (h2 << 1); // Combine the hashes
+        }
+    };
+
+    void paDfs(int i, int j, int n, int m, std::vector<std::vector<int>> &heights, std::unordered_set<std::pair<int, int>, PairHash> &set)
+    {
+        if (set.find({i, j}) != set.end())
+        {
+            return;
+        }
+
+        set.insert({i, j});
+        if (i - 1 >= 0 && heights[i - 1][j] >= heights[i][j])
+            paDfs(i - 1, j, n, m, heights, set);
+        if (i + 1 < n && heights[i + 1][j] >= heights[i][j])
+            paDfs(i + 1, j, n, m, heights, set);
+        if (j - 1 >= 0 && heights[i][j - 1] >= heights[i][j])
+            paDfs(i, j - 1, n, m, heights, set);
+        if (j + 1 < m && heights[i][j + 1] >= heights[i][j])
+            paDfs(i, j + 1, n, m, heights, set);
+    }
+
+    std::vector<std::vector<int>> pacificAtlantic(std::vector<std::vector<int>> &heights)
+    {
+        std::unordered_set<std::pair<int, int>, PairHash> pSet;
+        std::unordered_set<std::pair<int, int>, PairHash> aSet;
+        std::vector<std::vector<int>> result;
+        int row = heights.size(), col = heights[0].size();
+        for (int i = 0; i < col; i++)
+        {
+            paDfs(0, i, row, col, heights, pSet);
+            paDfs(row - 1, i, row, col, heights, aSet);
+        }
+        for (int i = 0; i < row; i++)
+        {
+            paDfs(i, 0, row, col, heights, pSet);
+            paDfs(i, col - 1, row, col, heights, aSet);
+        }
+
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < col; j++)
+            {
+                if (pSet.find({i, j}) != pSet.end() && aSet.find({i, j}) != aSet.end())
+                {
+                    result.push_back({i, j});
+                }
+            }
+        }
+        return result;
     }
 };
 
