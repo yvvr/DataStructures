@@ -1996,7 +1996,7 @@ public:
      * 
      * https://leetcode.com/problems/number-of-islands/description/
      */
-    int numIslands(vector<vector<char>>& grid) {
+    int numIslands(std::vector<std::vector<char>>& grid) {
         
     }
 };
