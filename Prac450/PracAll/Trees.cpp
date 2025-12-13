@@ -36,34 +36,75 @@ struct TreeNode
     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
-// class Node
-// {
-// public:
-//     int val;
-//     std::vector<Node *> children;
+class Node1
+{
+public:
+    int val;
+    std::vector<Node1 *> children;
 
-//     Node() {}
+    Node1() {}
 
-//     Node(int _val)
-//     {
-//         val = _val;
-//     }
+    Node1(int _val)
+    {
+        val = _val;
+    }
 
-//     Node(int _val, std::vector<Node *> _children)
-//     {
-//         val = _val;
-//         children = _children;
-//     }
-// };
+    Node1(int _val, std::vector<Node1 *> _children)
+    {
+        val = _val;
+        children = _children;
+    }
+};
+
+class Node2
+{
+public:
+    int val;
+    Node2 *left;
+    Node2 *right;
+    Node2 *parent;
+    std::vector<Node2 *> children;
+};
 
 class Node
 {
 public:
-    int val;
-    Node *left;
-    Node *right;
-    Node *parent;
-    std::vector<Node *> children;
+    bool val;
+    bool isLeaf;
+    Node *topLeft;
+    Node *topRight;
+    Node *bottomLeft;
+    Node *bottomRight;
+
+    Node()
+    {
+        val = false;
+        isLeaf = false;
+        topLeft = NULL;
+        topRight = NULL;
+        bottomLeft = NULL;
+        bottomRight = NULL;
+    }
+
+    Node(bool _val, bool _isLeaf)
+    {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = NULL;
+        topRight = NULL;
+        bottomLeft = NULL;
+        bottomRight = NULL;
+    }
+
+    Node(bool _val, bool _isLeaf, Node *_topLeft, Node *_topRight, Node *_bottomLeft, Node *_bottomRight)
+    {
+        val = _val;
+        isLeaf = _isLeaf;
+        topLeft = _topLeft;
+        topRight = _topRight;
+        bottomLeft = _bottomLeft;
+        bottomRight = _bottomRight;
+    }
 };
 
 class ListNode
@@ -290,7 +331,7 @@ public:
      *
      * https://leetcode.com/problems/n-ary-tree-postorder-traversal/description/
      */
-    void postOrderNth(Node *root, std::vector<int> &res)
+    void postOrderNth(Node1 *root, std::vector<int> &res)
     {
         if (root == nullptr)
         {
@@ -305,7 +346,7 @@ public:
         res.push_back(root->val);
     }
 
-    std::vector<int> postorder(Node *root)
+    std::vector<int> postorder(Node1 *root)
     {
         std::vector<int> res;
         postOrderNth(root, res);
@@ -892,7 +933,7 @@ public:
      *
      * https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree-iii/description/
      */
-    Node *lowestCommonAncestor(Node *p, Node *q)
+    Node2 *lowestCommonAncestor(Node2 *p, Node2 *q)
     {
         // std::unordered_set<Node *> pSet;
         // Node *p1 = p, *p2 = q;
@@ -913,7 +954,7 @@ public:
 
         // return nullptr;
 
-        Node *p1 = p, *p2 = q;
+        Node2 *p1 = p, *p2 = q;
         while (p1 != p2)
         {
             p1 = p1 ? p1->parent : q;
@@ -1654,6 +1695,163 @@ public:
         findDuplicateSubtreesDfs(root, idMap, count, res);
 
         return res;
+    }
+
+    /**
+     * 427. Construct Quad Tree.
+     *
+     * Given a n * n matrix grid of 0's and 1's only. We want to represent grid with a Quad-Tree.
+     * Return the root of the Quad-Tree representing grid.
+     *
+     * A Quad-Tree is a tree data structure in which each internal node has exactly four children. Besides, each node has two attributes:
+     *
+     * val: True if the node represents a grid of 1's or False if the node represents a grid of 0's. Notice that you can assign the val to True or False when isLeaf is False, and both are accepted in the answer.
+     *
+     * isLeaf: True if the node is a leaf node on the tree or False if the node has four children.
+     *
+     * https://leetcode.com/problems/construct-quad-tree/
+     */
+    bool isLeaf(int r, int c, int n, std::vector<std::vector<int>> &grid)
+    {
+        // int val = grid[rs][cs];
+        // for (int i = rs; i <= re; i++)
+        // {
+        //     for (int j = cs; j <= ce; j++)
+        //     {
+        //         if (grid[i][j] != val)
+        //         {
+        //             return false;
+        //         }
+        //     }
+        // }
+
+        // return true;
+
+        int val = grid[r][c];
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (grid[r + i][c + j] != val)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    Node *constructDfs(int r, int c, int n, std::vector<std::vector<int>> &grid)
+    {
+        bool isleaf = isLeaf(r, c, n, grid);
+        if (isleaf)
+        {
+            return new Node(grid[r][c], true);
+        }
+
+        n = n / 2;
+        Node *topLeft = constructDfs(r, c, n, grid);
+        Node *topRight = constructDfs(r, c + n, n, grid);
+        Node *bottomLeft = constructDfs(r + n, c, n, grid);
+        Node *bottomRight = constructDfs(r + n, r + n, n, grid);
+        return new Node(grid[r][c], false, topLeft, topRight, bottomLeft, bottomRight);
+    }
+
+    Node *construct(std::vector<std::vector<int>> &grid)
+    {
+        return constructDfs(0, 0, grid.size(), grid);
+    }
+
+    /**
+     * 958. Check Completeness of a Binary Tree.
+     *
+     * Given the root of a binary tree, determine if it is a complete binary tree.
+     * In a complete binary tree, every level, except possibly the last, is completely filled, and all nodes in the last level are as far left as possible.
+     * It can have between 1 and 2h nodes inclusive at the last level h.
+     *
+     * https://leetcode.com/problems/check-completeness-of-a-binary-tree/description/
+     */
+    bool isCompleteTree(TreeNode *root)
+    {
+        std::queue<TreeNode *> queue;
+        queue.push(root);
+
+        while (!queue.empty())
+        {
+            TreeNode *node = queue.front();
+            queue.pop();
+
+            if (node)
+            {
+                queue.push(node->left);
+                queue.push(node->right);
+            }
+            else
+            {
+                while (!queue.empty())
+                {
+                    if (queue.front())
+                    {
+                        return false;
+                    }
+                    queue.pop();
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 129. Sum Root to Leaf Numbers.
+     *
+     * You are given the root of a binary tree containing digits from 0 to 9 only.
+     * Each root-to-leaf path in the tree represents a number.
+     *
+     * For example, the root-to-leaf path 1 -> 2 -> 3 represents the number 123.
+     * Return the total sum of all root-to-leaf numbers. Test cases are generated so that the answer will fit in a 32-bit integer.
+     *
+     * A leaf node is a node with no children.
+     *
+     * https://leetcode.com/problems/sum-root-to-leaf-numbers/description/
+     */
+    void sumNumbersUtil(TreeNode *root, int sum, int &res)
+    {
+        if (!root)
+        {
+            return;
+        }
+
+        if (!root->left && !root->right)
+        {
+            res += sum * 10 + root->val;
+            return;
+        }
+
+        sum = sum * 10 + root->val;
+
+        sumNumbersUtil(root->left, sum, res);
+        sumNumbersUtil(root->right, sum, res);
+    }
+
+    int sumNumbers(TreeNode *root)
+    {
+        int res = 0;
+        sumNumbersUtil(root, 0, res);
+
+        return res;
+    }
+
+    /**
+     * 889. Construct Binary Tree from Preorder and Postorder Traversal.
+     * 
+     * Given two integer arrays, preorder and postorder where preorder is the preorder traversal of a binary tree of distinct values and postorder is the postorder traversal of the same tree, reconstruct and return the binary tree.
+     * If there exist multiple answers, you can return any of them.
+     * 
+     * https://leetcode.com/problems/construct-binary-tree-from-preorder-and-postorder-traversal/description/
+     */
+    TreeNode* constructFromPrePost(std::vector<int>& preorder, std::vector<int>& postorder) {
+        
     }
 
 private:
