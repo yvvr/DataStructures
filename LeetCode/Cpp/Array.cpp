@@ -22,6 +22,110 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <stack>
+#include <cmath>
+#include <sstream>
+#include <algorithm>
+#include <array>
+
+class NumArray
+{
+private:
+    std::vector<int> sumArr;
+
+public:
+    NumArray(std::vector<int> &nums)
+    {
+        int sum = 0;
+        for (auto &num : nums)
+        {
+            sum += num;
+            sumArr.push_back(sum);
+        }
+    }
+
+    int sumRange(int left, int right)
+    {
+        if (left == 0)
+        {
+            return sumArr[right];
+        }
+        return sumArr[right] - sumArr[left - 1];
+    }
+};
+
+class MyHashSet
+{
+private:
+    std::array<std::vector<int>, 10000> arr;
+
+public:
+    MyHashSet()
+    {
+    }
+
+    void add(int key)
+    {
+        auto &vec = arr[key % 10000];
+        if (std::find(vec.begin(), vec.end(), key) == vec.end())
+        {
+            arr[key % 10000].push_back(key);
+        }
+    }
+
+    void remove(int key)
+    {
+        auto &vec = arr[key % 10000];
+        vec.erase(std::remove(vec.begin(), vec.end(), key), vec.end());
+    }
+
+    bool contains(int key)
+    {
+        const auto &vec = arr[key % 10000];
+        return std::find(vec.begin(), vec.end(), key) != vec.end();
+    }
+};
+
+class MyHashMap
+{
+private:
+    std::array<std::vector<std::pair<int, int>>, 10000> arr;
+
+public:
+    MyHashMap()
+    {
+    }
+
+    void put(int key, int value)
+    {
+        auto &vec = arr[key % 10000];
+        auto it = std::find_if(vec.begin(), vec.end(), [key](const std::pair<int, int> &p)
+                               { return p.first == key; });
+        if (it == vec.end())
+        {
+            vec.push_back({key, value});
+        }
+        else
+        {
+            *it = {key, value};
+        }
+    }
+
+    int get(int key)
+    {
+        auto &vec = arr[key % 10000];
+        auto it = std::find_if(vec.begin(), vec.end(), [key](const std::pair<int, int> &p)
+                               { return p.first == key; });
+        return it == vec.end() ? -1 : it->second;
+    }
+
+    void remove(int key)
+    {
+        auto &vec = arr[key % 10000];
+        auto it = std::remove_if(vec.begin(), vec.end(), [key](const std::pair<int, int> &p)
+                                 { return p.first == key; });
+        vec.erase(it, vec.end());
+    }
+};
 
 class Solution
 {
@@ -872,8 +976,7 @@ public:
      */
     int maxAscendingSum(std::vector<int> &nums)
     {
-        int maxSum = nums[0];
-        int sum = nums[0];
+        int sum = nums[0], maxSum = nums[0];
 
         for (int i = 1; i < nums.size(); i++)
         {
@@ -890,6 +993,348 @@ public:
 
         return maxSum;
     }
+
+    /**
+     * 724. Find Pivot Index
+     *
+     * Given an array of integers nums, calculate the pivot index of this array.
+     *
+     * The pivot index is the index where the sum of all the numbers strictly to the left of the index is equal to the sum of all the numbers strictly to the index's right.
+     *
+     * If the index is on the left edge of the array, then the left sum is 0 because there are no elements to the left. This also applies to the right edge of the array.
+     *
+     * Return the leftmost pivot index. If no such index exists, return -1.
+     *
+     * https://leetcode.com/problems/find-pivot-index/description/
+     */
+    int pivotIndex(std::vector<int> &nums)
+    {
+        int tSum = 0;
+        for (auto &num : nums)
+        {
+            tSum += num;
+        }
+
+        int leftSum = 0;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            int rightSum = tSum - nums[i] - leftSum;
+            if (leftSum == rightSum)
+            {
+                return i;
+            }
+            leftSum += nums[i];
+        }
+
+        return -1;
+    }
+
+    /**
+     * Q2. Shuffle the Array.
+     *
+     * Given the array nums consisting of 2n elements in the form [x1,x2,...,xn,y1,y2,...,yn].
+     * Return the array in the form [x1,y1,x2,y2,...,xn,yn].
+     *
+     * https://leetcode.com/problems/shuffle-the-array/description/?envType=problem-list-v2&envId=dsa-linear-shoal-array-i
+     */
+    std::vector<int> shuffle(std::vector<int> &nums, int n)
+    {
+        // std::vector<int> shuffle(2 * n);
+        // for (int i = 0; i < n; i++)
+        // {
+        //     shuffle[2 * i] = nums[i];
+        //     shuffle[2 * i + 1] = nums[n + i];
+        // }
+        // return shuffle;
+        for (int i = n; i < 2 * n; i++)
+        {
+            int num = nums[i] << 10;
+            nums[i - n] |= num;
+        }
+
+        int mask = std::pow(2, 10) - 1;
+        for (int i = n - 1; i >= 0; i--)
+        {
+            int x = nums[i] & mask;
+            int y = nums[i] >> 10;
+            nums[2 * i] = x;
+            nums[2 * i + 1] = y;
+        }
+
+        return nums;
+    }
+
+    /**
+     * 303. Range Sum Query - Immutable
+     *
+     *
+     * Given an integer array nums, handle multiple queries of the following type:
+     *
+     * Calculate the sum of the elements of nums between indices left and right inclusive where left <= right.
+     *
+     * Implement the NumArray class:
+     * NumArray(int[] nums) Initializes the object with the integer array nums.
+     *
+     * int sumRange(int left, int right) Returns the sum of the elements of nums between indices left and right inclusive (i.e. nums[left] + nums[left + 1] + ... + nums[right]).
+     *
+     * https://leetcode.com/problems/range-sum-query-immutable/description/
+     */
+
+    /**
+     * 2965. Find Missing and Repeated Values
+     *
+     * You are given a 0-indexed 2D integer matrix grid of size n * n with values in the range [1, n2].
+     * Each integer appears exactly once except a which appears twice and b which is missing.
+     * The task is to find the repeating and missing numbers a and b.
+     *
+     * Return a 0-indexed integer array ans of size 2 where ans[0] equals to a and ans[1] equals to b.
+     *
+     * https://leetcode.com/problems/find-missing-and-repeated-values/
+     */
+    std::vector<int> findMissingAndRepeatedValues(std::vector<std::vector<int>> &grid)
+    {
+        std::unordered_set<int> set;
+        int dupNum = 0;
+        int gridSum = 0;
+
+        for (int i = 0; i < grid.size(); i++)
+        {
+            for (int j = 0; j < grid[0].size(); j++)
+            {
+                if (set.find(grid[i][j]) != set.end())
+                {
+                    dupNum = grid[i][j];
+                }
+                gridSum += grid[i][j];
+                set.insert(grid[i][j]);
+            }
+        }
+
+        int n = grid.size();
+        int totalNum = (n * n) * (n * n + 1) / 2;
+        int missingNum = totalNum - gridSum + dupNum;
+
+        return {dupNum, missingNum};
+    }
+
+    /**
+     * 448. Find All Numbers Disappeared in an Array.
+     *
+     * Given an array nums of n integers where nums[i] is in the range [1, n], return an array of all the integers in the range [1, n] that do not appear in nums.
+     *
+     * https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/description/
+     */
+    std::vector<int> findDisappearedNumbers(std::vector<int> &nums)
+    {
+        // std::unordered_set<int> set;
+        // std::vector<int> res;
+        // for (auto &num : nums)
+        // {
+        //     set.insert(num);
+        // }
+
+        // for (int i = 1; i <= nums.size(); i++)
+        // {
+        //     if (set.find(i) == set.end())
+        //     {
+        //         res.push_back(i);
+        //     }
+        // }
+        // return res;
+
+        std::vector<int> res;
+        for (int i = 0; i < nums.size(); i++)
+        {
+            int pos = std::abs(nums[i]) - 1;
+            if (nums[pos] < 0)
+            {
+                continue;
+            }
+            nums[pos] *= -1;
+        }
+
+        for (int i = 0; i < nums.size(); i++)
+        {
+            if (nums[i] > 0)
+            {
+                res.push_back(i + 1);
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 1394. Find Lucky Integer in an Array
+     *
+     * Given an array of integers arr, a lucky integer is an integer that has a frequency in the array equal to its value.
+     *
+     * Return the largest lucky integer in the array. If there is no lucky integer return -1.
+     *
+     * https://leetcode.com/problems/find-lucky-integer-in-an-array/description/
+     */
+    int findLucky(std::vector<int> &arr)
+    {
+        std::unordered_map<int, int> map;
+        int larLucky = -1;
+
+        for (auto &num : arr)
+        {
+            map[num] += 1;
+        }
+
+        for (auto &num : arr)
+        {
+            if (map[num] == num)
+            {
+                larLucky = std::max(larLucky, num);
+            }
+        }
+
+        return larLucky;
+    }
+
+    /**
+     * 1189. Maximum Number of Balloons
+     *
+     * Given a string text, you want to use the characters of text to form as many instances of the word "balloon" as possible.
+     *
+     * You can use each character in text at most once. Return the maximum number of instances that can be formed.
+     *
+     * https://leetcode.com/problems/maximum-number-of-balloons/description/
+     */
+    int maxNumberOfBalloons(std::string text)
+    {
+        // std::unordered_map<char, int> map;
+        // for (auto &ch : text)
+        // {
+        //     map[ch] += 1;
+        // }
+
+        // std::string ballon = "balloon";
+        // int maxVal = INT_MAX;
+
+        // for (auto &ch : ballon)
+        // {
+        //     if (ch == 'l' || ch == 'o')
+        //     {
+        //         maxVal = std::min(maxVal, map[ch] / 2);
+        //     }
+        //     else
+        //     {
+        //         maxVal = std::min(maxVal, map[ch]);
+        //     }
+        // }
+
+        // return maxVal;
+
+        std::unordered_map<char, int> map;
+        std::string balloon = "balloon";
+        for (auto &ch : text)
+        {
+            if (balloon.find(ch) != std::string::npos)
+            {
+                map[ch] += 1;
+            }
+        }
+
+        return std::min({map['b'], map['a'], map['l'] / 2, map['o'] / 2, map['n']});
+    }
+
+    /**
+     * 290. Word Pattern
+     *
+     * Given a pattern and a string s, find if s follows the same pattern.
+     *
+     * Here follow means a full match, such that there is a bijection between a letter in pattern and a non-empty word in s. Specifically:
+     * Each letter in pattern maps to exactly one unique word in s.
+     * Each unique word in s maps to exactly one letter in pattern.
+     *
+     * No two letters map to the same word, and no two words map to the same letter.
+     *
+     * https://leetcode.com/problems/word-pattern/description/
+     */
+    std::vector<std::string> split(const std::string &s, char delimiter)
+    {
+        std::vector<std::string> result;
+        std::stringstream ss(s);
+        std::string item;
+
+        while (std::getline(ss, item, delimiter))
+        {
+            result.push_back(item);
+        }
+        return result;
+    }
+
+    bool wordPattern(std::string pattern, std::string s)
+    {
+        std::unordered_map<char, std::string> charMap;
+        std::unordered_map<std::string, char> strMap;
+
+        std::vector<std::string> strArr = split(s, ' ');
+
+        if (pattern.length() != strArr.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < pattern.length(); i++)
+        {
+            if (charMap.count(pattern[i]) != 0 && charMap[pattern[i]] != strArr[i])
+            {
+                return false;
+            }
+
+            if (strMap.count(strArr[i]) != 0 && strMap[strArr[i]] != pattern[i])
+            {
+                return false;
+            }
+
+            charMap[pattern[i]] = strArr[i];
+            strMap[strArr[i]] = pattern[i];
+        }
+
+        return true;
+    }
+
+    /**
+     * 1051. Height Checker.
+     *
+     * A school is trying to take an annual photo of all the students.
+     * The students are asked to stand in a single file line in non-decreasing order by height. Let this ordering be represented by the integer array expected where expected[i] is the expected height of the ith student in line.
+     *
+     * Return the number of indices where heights[i] != expected[i].
+     */
+    int heightChecker(std::vector<int> &heights)
+    {
+        std::vector<int> sortHeights(heights);
+        std::sort(sortHeights.begin(), sortHeights.end());
+        int count = 0;
+
+        for (int i = 0; i < heights.size(); i++)
+        {
+            if (heights[i] != sortHeights[i])
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * 705. Design HashSet
+     *
+     * Design a HashSet without using any built-in hash table libraries.
+     * Implement MyHashSet class:
+     *
+     * void add(key) Inserts the value key into the HashSet.
+     *
+     * bool contains(key) Returns whether the value key exists in the HashSet or not.
+     *
+     * void remove(key) Removes the value key in the HashSet. If key does not exist in the HashSet, do nothing.
+     */
 };
 
 int main()
@@ -943,14 +1388,20 @@ int main()
     // std::cout << "Remove Element: " << obj.removeElement(nums, val) << "\n";
 
     // 496. Next Greater Element I
-    std::vector<int> nums1 = {2, 4};
-    std::vector<int> nums2 = {1, 2, 3, 4};
-    std::vector<int> result = obj.nextGreaterElement(nums1, nums2);
-    for (auto &num : result)
-    {
-        std::cout << num << " ";
-    }
-    std::cout << std::endl;
+    // std::vector<int> nums1 = {2, 4};
+    // std::vector<int> nums2 = {1, 2, 3, 4};
+    // std::vector<int> result = obj.nextGreaterElement(nums1, nums2);
+    // for (auto &num : result)
+    // {
+    //     std::cout << num << " ";
+    // }
+    // std::cout << std::endl;
+
+    // 2965. Find Missing and Repeated Values
+    std::vector<std::vector<int>> grid = {{1, 3}, {2, 2}};
+    std::vector<int> res = obj.findMissingAndRepeatedValues(grid);
+    std::cout << "Missing and Repeated Values: " << std::endl;
+    std::cout << "Repeated: " << res[0] << ", Missing: " << res[1] << "\n";
 
     return 0;
 }
