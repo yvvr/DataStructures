@@ -1844,14 +1844,36 @@ public:
 
     /**
      * 889. Construct Binary Tree from Preorder and Postorder Traversal.
-     * 
+     *
      * Given two integer arrays, preorder and postorder where preorder is the preorder traversal of a binary tree of distinct values and postorder is the postorder traversal of the same tree, reconstruct and return the binary tree.
      * If there exist multiple answers, you can return any of them.
-     * 
+     *
      * https://leetcode.com/problems/construct-binary-tree-from-preorder-and-postorder-traversal/description/
      */
-    TreeNode* constructFromPrePost(std::vector<int>& preorder, std::vector<int>& postorder) {
-        
+    // TreeNode *constructFromPrePost(std::vector<int> &preorder, std::vector<int> &postorder)
+    // {
+    // }
+
+    /**
+     * 270. Closest Binary Search Tree Value.
+     *
+     * Given the root of a binary search tree and a target value, return the value in the BST that is closest to the target. If there are multiple answers, print the smallest.
+     *
+     * https://leetcode.com/problems/closest-binary-search-tree-value/description/
+     */
+
+    int closestValue(TreeNode *root, double target)
+    {
+        int val, closest = root->val;
+
+        while (root != nullptr)
+        {
+            val = root->val;
+            closest = abs(val - target) < abs(closest - target) || (abs(val - target) == abs(closest - target) && val < closest) ? val : closest;
+            root = target < root->val ? root->left : root->right;
+        }
+
+        return closest;
     }
 
 private:
